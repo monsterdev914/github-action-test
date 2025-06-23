@@ -97,40 +97,38 @@ jobs:
         cp MicMonitor release/
         
         # Create a simple README for the binaries
-        cat > release/README.md << 'EOF'
-# Native macOS Components
-
-This directory contains compiled native components for macOS:
-
-## audioRecorder
-A Swift-based screen and audio recorder using ScreenCaptureKit and AVFoundation.
-
-Usage:
-- `./audioRecorder --check-permissions` - Check screen recording permissions
-- `./audioRecorder --check-all-permissions` - Check both microphone and screen permissions
-- `./audioRecorder --record <path> [--filename <name>]` - Start recording
-
-## micRecorder
-A Swift-based microphone streaming recorder using AVFoundation.
-
-Usage:
-- `./micRecorder start` - Start streaming microphone audio to stdout
-- `./micRecorder stop` - Stop streaming (if running in background)
-
-## MicMonitor
-An Objective-C microphone activity monitor using Core Audio.
-
-Usage:
-- `./MicMonitor` - Monitor microphone activity in real-time
-
-## Requirements
-- macOS 12.0 or later
-- Screen recording permission (for audioRecorder)
-- Microphone permission (for micRecorder and MicMonitor)
-
-## Permissions
-All applications require appropriate permissions to be granted in System Preferences > Security & Privacy.
-EOF
+        echo "# Native macOS Components" > release/README.md
+        echo "" >> release/README.md
+        echo "This directory contains compiled native components for macOS:" >> release/README.md
+        echo "" >> release/README.md
+        echo "## audioRecorder" >> release/README.md
+        echo "A Swift-based screen and audio recorder using ScreenCaptureKit and AVFoundation." >> release/README.md
+        echo "" >> release/README.md
+        echo "Usage:" >> release/README.md
+        echo "- \`./audioRecorder --check-permissions\` - Check screen recording permissions" >> release/README.md
+        echo "- \`./audioRecorder --check-all-permissions\` - Check both microphone and screen permissions" >> release/README.md
+        echo "- \`./audioRecorder --record <path> [--filename <name>]\` - Start recording" >> release/README.md
+        echo "" >> release/README.md
+        echo "## micRecorder" >> release/README.md
+        echo "A Swift-based microphone streaming recorder using AVFoundation." >> release/README.md
+        echo "" >> release/README.md
+        echo "Usage:" >> release/README.md
+        echo "- \`./micRecorder start\` - Start streaming microphone audio to stdout" >> release/README.md
+        echo "- \`./micRecorder stop\` - Stop streaming (if running in background)" >> release/README.md
+        echo "" >> release/README.md
+        echo "## MicMonitor" >> release/README.md
+        echo "An Objective-C microphone activity monitor using Core Audio." >> release/README.md
+        echo "" >> release/README.md
+        echo "Usage:" >> release/README.md
+        echo "- \`./MicMonitor\` - Monitor microphone activity in real-time" >> release/README.md
+        echo "" >> release/README.md
+        echo "## Requirements" >> release/README.md
+        echo "- macOS 12.0 or later" >> release/README.md
+        echo "- Screen recording permission (for audioRecorder)" >> release/README.md
+        echo "- Microphone permission (for micRecorder and MicMonitor)" >> release/README.md
+        echo "" >> release/README.md
+        echo "## Permissions" >> release/README.md
+        echo "All applications require appropriate permissions to be granted in System Preferences > Security & Privacy." >> release/README.md
         
         # Create a zip file
         cd release
