@@ -1,0 +1,145 @@
+name: Compile Native macOS Components
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  compile-macos:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: 'latest-stable'
+        
+    - name: Compile Swift Audio Recorder
+      run: |
+        echo "Compiling Swift audio recorder..."
+        cd native
+        swiftc -o audioRecorder \
+          -framework AVFoundation \
+          -framework ScreenCaptureKit \
+          -framework Foundation \
+          -framework CoreMedia \
+          -framework CoreAudio \
+          audioRecorder.swift
+        echo "✅ Swift audio recorder compiled successfully"
+        ls -la audioRecorder
+        
+    - name: Compile Swift Microphone Recorder
+      run: |
+        echo "Compiling Swift microphone recorder..."
+        cd native
+        swiftc -o micRecorder \
+          -framework AVFoundation \
+          -framework Foundation \
+          micRecorder.swift
+        echo "✅ Swift microphone recorder compiled successfully"
+        ls -la micRecorder
+        
+    - name: Compile Objective-C Microphone Monitor
+      run: |
+        echo "Compiling Objective-C microphone monitor..."
+        cd native
+        clang -o MicMonitor \
+          -framework Foundation \
+          -framework CoreAudio \
+          -framework AudioToolbox \
+          MicMonitor.m
+        echo "✅ Objective-C microphone monitor compiled successfully"
+        ls -la MicMonitor
+        
+    - name: Test compiled binaries
+      run: |
+        echo "Testing compiled binaries..."
+        cd native
+        
+        # Test microphone monitor (should show current state and exit)
+        echo "Testing MicMonitor..."
+        timeout 5s ./MicMonitor || true
+        
+        # Test audio recorder help/version
+        echo "Testing audioRecorder..."
+        ./audioRecorder --check-permissions || true
+        
+        # Test microphone recorder
+        echo "Testing micRecorder..."
+        ./micRecorder || true
+        
+    - name: Upload compiled binaries
+      uses: actions/upload-artifact@v4
+      with:
+        name: compiled-binaries
+        path: |
+          native/audioRecorder
+          native/micRecorder
+          native/MicMonitor
+        retention-days: 30
+        
+    - name: Create release assets
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      run: |
+        echo "Creating release assets..."
+        cd native
+        
+        # Create a simple package
+        mkdir -p release
+        cp audioRecorder release/
+        cp micRecorder release/
+        cp MicMonitor release/
+        
+        # Create a simple README for the binaries
+        cat > release/README.md << 'EOF'
+# Native macOS Components
+
+This directory contains compiled native components for macOS:
+
+## audioRecorder
+A Swift-based screen and audio recorder using ScreenCaptureKit and AVFoundation.
+
+Usage:
+- `./audioRecorder --check-permissions` - Check screen recording permissions
+- `./audioRecorder --check-all-permissions` - Check both microphone and screen permissions
+- `./audioRecorder --record <path> [--filename <name>]` - Start recording
+
+## micRecorder
+A Swift-based microphone streaming recorder using AVFoundation.
+
+Usage:
+- `./micRecorder start` - Start streaming microphone audio to stdout
+- `./micRecorder stop` - Stop streaming (if running in background)
+
+## MicMonitor
+An Objective-C microphone activity monitor using Core Audio.
+
+Usage:
+- `./MicMonitor` - Monitor microphone activity in real-time
+
+## Requirements
+- macOS 12.0 or later
+- Screen recording permission (for audioRecorder)
+- Microphone permission (for micRecorder and MicMonitor)
+
+## Permissions
+All applications require appropriate permissions to be granted in System Preferences > Security & Privacy.
+EOF
+        
+        # Create a zip file
+        cd release
+        zip -r ../native-components-macos.zip .
+        
+    - name: Upload release package
+      if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+      uses: actions/upload-artifact@v4
+      with:
+        name: native-components-macos
+        path: native/native-components-macos.zip
+        retention-days: 90
